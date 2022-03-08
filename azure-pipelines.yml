@@ -1,0 +1,39 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  branches:
+    include:
+    - Distance
+#- master
+
+#pr:
+#- master
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+- stage: Build
+  displayName: Build uC/OS-III code and Run static code analysis  
+  
+  jobs:
+  - job: Build
+    displayName: Build uC/OS-III code
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: |
+          python -m pip install --upgrade pip  
+          pip install --upgrade platformio
+      displayName: Install python, platformio and cppcheck
+
+    - bash: |
+        pio check --fail-on-defect=medium --fail-on-defect=high
+      displayName: Run cppcheck tool - static code analysis
+    - bash: |
+        pio run
+      displayName: Build code by platformio

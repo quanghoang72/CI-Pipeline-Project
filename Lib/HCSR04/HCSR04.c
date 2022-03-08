@@ -1,4 +1,4 @@
-#include "hcsr04.h"
+#include "HCSR04.h"
 #include <stdio.h>
 
 /******* GLOBAL VARIABLE **********/
@@ -47,12 +47,12 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 void HCSR04_Read (void)
 {
 	HAL_GPIO_WritePin(TRIG_PORT, TRIG_PIN, GPIO_PIN_SET);  // pull the TRIG pin HIGH
-	TIM4_delay(10);  // wait for 10 us
+	delay(10);  // wait for 10 us
 	HAL_GPIO_WritePin(TRIG_PORT, TRIG_PIN, GPIO_PIN_RESET);  // pull the TRIG pin low
 	__HAL_TIM_ENABLE_IT(&htim4, TIM_IT_CC1);
 }
 
- void TIM4_delay (uint16_t time)
+ void delay (uint16_t time)
  {
    __HAL_TIM_SET_COUNTER(&htim4,0);
    while(__HAL_TIM_GET_COUNTER(&htim4)<time);
