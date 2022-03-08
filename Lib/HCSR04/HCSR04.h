@@ -11,9 +11,9 @@ extern "C" {
 #define TRIG_PORT GPIOA
 
 
-void TIM4_delay (uint16_t time);
+void delay (uint16_t time);
 void HCSR04_Read (void);
-\
+
 
  #ifdef __cplusplus
 }
