@@ -29,7 +29,8 @@ stages:
         script: |
           python -m pip install --upgrade pip  
           pip install --upgrade platformio
-      displayName: Install python and platformio
+          sudo apt-get install cppcheck
+      displayName: Install python, platformio and cppcheck
 
     - bash: |
         pio check --fail-on-defect=medium --fail-on-defect=high
