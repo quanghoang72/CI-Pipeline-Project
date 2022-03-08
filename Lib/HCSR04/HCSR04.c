@@ -1,4 +1,4 @@
-#include "hcsr04.h"
+#include "HCSR04.h"
 #include <stdio.h>
 
 /******* GLOBAL VARIABLE **********/
