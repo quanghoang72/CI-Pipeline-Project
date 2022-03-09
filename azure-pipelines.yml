@@ -48,7 +48,7 @@ stages:
   displayName: Run gtest with Docker
 
   jobs:
-    - job: Build code
+    - job: Build
       displayName: Build Test case Code
       steps:
         - task: Docker@2
