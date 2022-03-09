@@ -11,8 +11,8 @@ trigger:
     - Distance
 #- master
 
-#pr:
-#- master
+pr:
+ - master
 
 pool:
   vmImage: ubuntu-latest
