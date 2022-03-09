@@ -7,9 +7,7 @@ trigger:
   batch: true
   branches:
     include:
-    - Temper
-    - Distance
-#- master
+    - master
 
 pr:
  - master
