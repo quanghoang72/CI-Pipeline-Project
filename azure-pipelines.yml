@@ -17,7 +17,7 @@ pr:
 variables:
   tag: '$(Build.BuildId)'
   imageName: 'pipelines-gtest-docker'
-  
+
 pool:
   vmImage: ubuntu-latest
 
@@ -46,8 +46,9 @@ stages:
 
 - stage: Unit testing with Gtest
   displayName: Run gtest with Docker
+
   jobs:
-    - job: Build
+    - job: Build code
       displayName: Build Test case Code
       steps:
         - task: Docker@2
@@ -76,7 +77,6 @@ stages:
             pathToPublish: $(Build.ArtifactStagingDirectory)
             artifactName: MyBuildOutputs
     - job: Test
-      dependsOn: Build
       displayName: Run gtest
       steps:
         - download: current
