@@ -19,37 +19,42 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include <string.h>
+/* Task Stack Size */
 #define APP_TASK_START_STK_SIZE 128u
-#define DIS_TASK_STK_SIZE 128u
+#define TEMPERATURE_TASK_STK_SIZE 128u
+
 
 /* Task Priority */
 #define APP_TASK_START_PRIO 1u
-#define DIS_TASK_PRIO 2u
+#define TEMPERATURE_TASK_PRIO 2u
 
 void SystemClock_Config(void);
 
 /* Task Control Block */
 static OS_TCB AppTaskStartTCB;
-static OS_TCB DisTaskTCB;
+static OS_TCB TemperatureTaskTCB;
+
 
 /* Task Stack */
 static CPU_STK AppTaskStartStk[APP_TASK_START_STK_SIZE];
-static CPU_STK DisTaskStk[DIS_TASK_STK_SIZE];
+static CPU_STK TemperatureTaskStk[TEMPERATURE_TASK_STK_SIZE];
 
+/* Semaphore */
 OS_SEM sem;
 
 static void AppTaskStart(void *p_arg);
-static void DisTask(void *p_arg);
+static void TemperatureTask(void *p_arg);
+
+
 
 /**
   * @brief  The application entry point.
   * @retval int
   */
-
 int main(void)
 {
-  /* To store error code */
+/* To store error code */
   OS_ERR os_err;
 
   /* Initialize uC/OS-III */
@@ -63,7 +68,7 @@ int main(void)
 
   OSSemCreate(
       (OS_SEM *)&sem,
-      (CPU_CHAR *)"changing sema",
+      (CPU_CHAR *)"Semaphore",
       (OS_SEM_CTR)0,
       (OS_ERR *)&os_err);
 
@@ -109,9 +114,8 @@ int main(void)
 
   /* Start Mulitasking */
   OSStart(&os_err);
-  /* USER CODE BEGIN 3 */
+ 
 }
-/* USER CODE END 3 */
 
 /**
   * @brief System Clock Configuration
@@ -141,7 +145,8 @@ void SystemClock_Config(void)
   }
   /** Initializes the CPU, AHB and APB buses clocks
   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
@@ -153,57 +158,74 @@ void SystemClock_Config(void)
   }
 }
 
+
 static void AppTaskStart(void *p_arg)
 {
   OS_ERR os_err;
+
   HAL_Init();
   SystemClock_Config();
 
   MX_GPIO_Init();
-  MX_TIM4_Init();
+  MX_TIM6_Init();
   MX_USART2_UART_Init();
-  //MX_USART3_UART_Init();
 
-  HAL_TIM_Base_Start(&htim4);
+  HAL_TIM_Base_Start(&htim6);
 
   OSTaskCreate(
-      (OS_TCB *)&DisTaskTCB,
-      (CPU_CHAR *)"Distance Task",
-      (OS_TASK_PTR)DisTask,
+      (OS_TCB *)&TemperatureTaskTCB,
+      (CPU_CHAR *)"Temper Task",
+      (OS_TASK_PTR)TemperatureTask,
       (void *)0,
-      (OS_PRIO)DIS_TASK_PRIO,
-      (CPU_STK *)&DisTaskStk[0],
-      (CPU_STK_SIZE)DIS_TASK_STK_SIZE / 10,
-      (CPU_STK_SIZE)DIS_TASK_STK_SIZE,
+      (OS_PRIO)TEMPERATURE_TASK_PRIO,
+      (CPU_STK *)&TemperatureTaskStk[0],
+      (CPU_STK_SIZE)TEMPERATURE_TASK_STK_SIZE / 10,
+      (CPU_STK_SIZE)TEMPERATURE_TASK_STK_SIZE,
       (OS_MSG_QTY)5u,
       (OS_TICK)0u,
       (void *)0,
       (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
       (OS_ERR *)&os_err);
+
 }
 
-static void DisTask(void *p_arg)
+static void TemperatureTask(void *p_arg)
 {
 
   OS_ERR os_err;
-
+  int a=100,a1=5;
+  int b=25;
+  int c=0;
+  uint16_t result=0;
   uint8_t msg[50];
-  HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
+    uint8_t msg1[50];
+  uint8_t tem = 1;
+
   while (DEF_TRUE)
   {
-    HAL_GPIO_WritePin(GPIOA, LD2_Pin, 1);
-    OSTimeDlyHMSM(0, 0, 0, 500, OS_OPT_TIME_HMSM_STRICT, &os_err);
 
-    HCSR04_Read();
+    // HAL_GPIO_WritePin(GPIOA, LD2_Pin, 1);
+    // OSTimeDlyHMSM(0, 0, 0, 200, OS_OPT_TIME_HMSM_STRICT, &os_err);
 
+    // result = DS18B20_Operation();
+    // Temperature= floor(result/16);
+    for(int i=0;i<4;i++){
+    sprintf(msg, "DIS: %d | TEM: %d | C: %d \n\r",a,b,c);tem=0;}
 
-    sprintf(msg, "Distance: %d \n\r", Distance);
-    HAL_UART_Transmit(&huart2, msg, strlen(msg), 100);
-    HAL_GPIO_WritePin(GPIOA, LD2_Pin, 0);
+   HAL_UART_Transmit(&huart2,msg,strlen(msg),100);
+    if(tem==0)sprintf(msg1, "DIS: %d | TEM: %d | C: %d \n\r",a1,b,c);
+       HAL_UART_Transmit(&huart2,msg1,strlen(msg),100);
+    //HAL_GPIO_WritePin(GPIOA, LD2_Pin, 0);
 
+    //  OSSemPost(
+    //     (OS_SEM *)&sem,
+    //     (OS_OPT)OS_OPT_POST_1,
+    //     (OS_ERR *)&os_err);
     OSTimeDlyHMSM(0, 0, 0, 500, OS_OPT_TIME_HMSM_STRICT, &os_err);
   }
 }
+
+/* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
 
@@ -222,7 +244,7 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef USE_FULL_ASSERT
+#ifdef  USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.
@@ -239,4 +261,4 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-/***concac (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
