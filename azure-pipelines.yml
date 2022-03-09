@@ -9,6 +9,7 @@ trigger:
     include:
     - Temper
     - Distance
+    - dite
 #- master
 
 pr:
