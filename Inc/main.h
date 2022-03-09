@@ -34,7 +34,7 @@ extern "C" {
 #include "gpio.h"
 #include <os.h>
 #include "HCSR04.h"
-#include "DS18b20.h"
+#include "ds18b20.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
