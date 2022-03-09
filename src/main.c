@@ -20,41 +20,56 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include <string.h>
+
 /* Task Stack Size */
 #define APP_TASK_START_STK_SIZE 128u
 #define TEMPERATURE_TASK_STK_SIZE 128u
-
+#define DIS_TASK_STK_SIZE 128u
+#define SEND_TASK_STK_SIZE 128u
 
 /* Task Priority */
 #define APP_TASK_START_PRIO 1u
-#define TEMPERATURE_TASK_PRIO 2u
+#define DIS_TASK_PRIO 2u
+#define TEMPERATURE_TASK_PRIO 3u
+#define SEND_TASK_PRIO 4u
 
 void SystemClock_Config(void);
 
 /* Task Control Block */
 static OS_TCB AppTaskStartTCB;
+static OS_TCB DisTaskTCB;
 static OS_TCB TemperatureTaskTCB;
-
+static OS_TCB SendTaskTCB;
 
 /* Task Stack */
 static CPU_STK AppTaskStartStk[APP_TASK_START_STK_SIZE];
 static CPU_STK TemperatureTaskStk[TEMPERATURE_TASK_STK_SIZE];
+static CPU_STK DisTaskStk[DIS_TASK_STK_SIZE];
+static CPU_STK SendTaskStk[DIS_TASK_STK_SIZE];
 
 /* Semaphore */
 OS_SEM sem;
 
+/* Function Prototype */
 static void AppTaskStart(void *p_arg);
 static void TemperatureTask(void *p_arg);
-
-
-
+static void DisTask(void *p_arg);
+static void SendTask(void *p_arg);
 /**
   * @brief  The application entry point.
   * @retval int
   */
+/** GLOBAL VARIABLE **/
+uint16_t counter_D = 0;
+uint16_t counter_T = 0;
+uint16_t count = 0; //count people
+
+uint16_t result = 0;
+uint8_t Temperature = 0;
+
 int main(void)
 {
-/* To store error code */
+  /* To store error code */
   OS_ERR os_err;
 
   /* Initialize uC/OS-III */
@@ -68,10 +83,9 @@ int main(void)
 
   OSSemCreate(
       (OS_SEM *)&sem,
-      (CPU_CHAR *)"Semaphore",
-      (OS_SEM_CTR)0,
+      (CPU_CHAR *)"Semaphore to protect share resource",
+      (OS_SEM_CTR)1,
       (OS_ERR *)&os_err);
-
   OSTaskCreate(
       /* pointer to task control block */
       (OS_TCB *)&AppTaskStartTCB,
@@ -114,7 +128,7 @@ int main(void)
 
   /* Start Mulitasking */
   OSStart(&os_err);
- 
+  /* USER CODE BEGIN 3 */
 }
 
 /**
@@ -145,8 +159,7 @@ void SystemClock_Config(void)
   }
   /** Initializes the CPU, AHB and APB buses clocks
   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
@@ -158,7 +171,7 @@ void SystemClock_Config(void)
   }
 }
 
-
+/* USER CODE BEGIN 4 */
 static void AppTaskStart(void *p_arg)
 {
   OS_ERR os_err;
@@ -167,14 +180,31 @@ static void AppTaskStart(void *p_arg)
   SystemClock_Config();
 
   MX_GPIO_Init();
+  MX_TIM4_Init();
   MX_TIM6_Init();
   MX_USART2_UART_Init();
+  MX_USART3_UART_Init();
 
+  HAL_TIM_Base_Start(&htim4);
   HAL_TIM_Base_Start(&htim6);
 
   OSTaskCreate(
+      (OS_TCB *)&DisTaskTCB,
+      (CPU_CHAR *)"Distance measurement Task",
+      (OS_TASK_PTR)DisTask,
+      (void *)0,
+      (OS_PRIO)DIS_TASK_PRIO,
+      (CPU_STK *)&DisTaskStk[0],
+      (CPU_STK_SIZE)DIS_TASK_STK_SIZE / 10,
+      (CPU_STK_SIZE)DIS_TASK_STK_SIZE,
+      (OS_MSG_QTY)5u,
+      (OS_TICK)0u,
+      (void *)0,
+      (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+      (OS_ERR *)&os_err);
+  OSTaskCreate(
       (OS_TCB *)&TemperatureTaskTCB,
-      (CPU_CHAR *)"Temper Task",
+      (CPU_CHAR *)"Temperature measurement Task",
       (OS_TASK_PTR)TemperatureTask,
       (void *)0,
       (OS_PRIO)TEMPERATURE_TASK_PRIO,
@@ -186,47 +216,146 @@ static void AppTaskStart(void *p_arg)
       (void *)0,
       (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
       (OS_ERR *)&os_err);
-
+  OSTaskCreate(
+      (OS_TCB *)&SendTaskTCB,
+      (CPU_CHAR *)"Sending data to usart2 and regular LED Task",
+      (OS_TASK_PTR)SendTask,
+      (void *)0,
+      (OS_PRIO)SEND_TASK_PRIO,
+      (CPU_STK *)&SendTaskStk[0],
+      (CPU_STK_SIZE)SEND_TASK_STK_SIZE / 10,
+      (CPU_STK_SIZE)SEND_TASK_STK_SIZE,
+      (OS_MSG_QTY)5u,
+      (OS_TICK)0u,
+      (void *)0,
+      (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+      (OS_ERR *)&os_err);
 }
+static void DisTask(void *p_arg)
+{
 
+  OS_ERR os_err;
+  HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
+  while (DEF_TRUE)
+  {
+    OSSemPend(
+        (OS_SEM *)&sem,
+        (OS_TICK)0,
+        (OS_OPT)OS_OPT_PEND_BLOCKING,
+        (CPU_TS *)NULL,
+        (OS_ERR *)&os_err);
+
+    HCSR04_Read();
+    if (Distance <= 10 && Distance != 0) // !=0 to avoid initial value
+    {
+      HAL_GPIO_WritePin(GPIOA, LD2_Pin, 1);
+      counter_D = 1;
+    }
+
+    if ((counter_T & counter_D) == 1 && HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) == 1) //ppl goout - check output status of HCSR04
+    {
+      if (count == 0) // prevent negative value
+        {count = 0;}
+      else{
+        count--;
+        HAL_UART_Transmit(&huart2, "Count PP out \n\r", 15, 100);}
+      counter_T = 0;
+      counter_D = 0;
+    }
+    else
+    {
+      counter_T = 0; //reset Temperature counter
+    }
+    OSSemPost(
+        (OS_SEM *)&sem,
+        (OS_OPT)OS_OPT_POST_1,
+        (OS_ERR *)&os_err);
+    OSTimeDlyHMSM(0, 0, 0, 700, OS_OPT_TIME_HMSM_STRICT, &os_err);
+  }
+}
 static void TemperatureTask(void *p_arg)
 {
 
   OS_ERR os_err;
-  int a=100,a1=5;
-  int b=25;
-  int c=0;
-  uint16_t result=0;
-  uint8_t msg[50];
-    uint8_t msg1[50];
-  uint8_t tem = 1;
-
   while (DEF_TRUE)
   {
+    OSSemPend(
+        (OS_SEM *)&sem,
+        (OS_TICK)0,
+        (OS_OPT)OS_OPT_PEND_BLOCKING,
+        (CPU_TS *)NULL,
+        (OS_ERR *)&os_err);
 
-    // HAL_GPIO_WritePin(GPIOA, LD2_Pin, 1);
-    // OSTimeDlyHMSM(0, 0, 0, 200, OS_OPT_TIME_HMSM_STRICT, &os_err);
-
-    // result = DS18B20_Operation();
-    // Temperature= floor(result/16);
-    for(int i=0;i<4;i++){
-    sprintf(msg, "DIS: %d | TEM: %d | C: %d \n\r",a,b,c);tem=0;}
-
-   HAL_UART_Transmit(&huart2,msg,strlen(msg),100);
-    if(tem==0)sprintf(msg1, "DIS: %d | TEM: %d | C: %d \n\r",a1,b,c);
-       HAL_UART_Transmit(&huart2,msg1,strlen(msg),100);
-    //HAL_GPIO_WritePin(GPIOA, LD2_Pin, 0);
-
-    //  OSSemPost(
-    //     (OS_SEM *)&sem,
-    //     (OS_OPT)OS_OPT_POST_1,
-    //     (OS_ERR *)&os_err);
+    result = DS18B20_Operation();
+    Temperature = floor(result / 16.00 * 1.00);
+    if (Temperature >= 28 && Temperature <= 32)
+    {
+      HAL_GPIO_WritePin(GPIOA, LD2_Pin, 0);
+      counter_T = 1;
+    }
+    if ((counter_T & counter_D) == 1 && HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) == 0) // comein - LD output of DS18b20
+    {
+      count++; // Dis<=10, 27 <= T <=32
+      counter_T = 0;
+      counter_D = 0;
+      HAL_UART_Transmit(&huart2, "Count PP in \n\r", 15, 100);
+    }
+    //     else
+    // {
+    //   counter_D = 0; //reset Temperature counter
+    // }
+    OSSemPost(
+        (OS_SEM *)&sem,
+        (OS_OPT)OS_OPT_POST_1,
+        (OS_ERR *)&os_err);
     OSTimeDlyHMSM(0, 0, 0, 500, OS_OPT_TIME_HMSM_STRICT, &os_err);
   }
 }
 
-/* USER CODE BEGIN 4 */
+static void SendTask(void *p_arg)
+{
 
+  OS_ERR os_err;
+  uint8_t msg[50];
+    uint8_t buf[30];
+    uint8_t test=5;
+
+  while (DEF_TRUE)
+  {
+    OSSemPend(
+        (OS_SEM *)&sem,
+        (OS_TICK)0,
+        (OS_OPT)OS_OPT_PEND_BLOCKING,
+        (CPU_TS *)NULL,
+        (OS_ERR *)&os_err);
+
+    /* LED SETUP */
+    if (count != 0)
+    {
+      Set_Pin_Input(GPIOA, GPIO_PIN_4);
+    }
+    else
+    {
+      Set_Pin_Output(GPIOA, GPIO_PIN_4);
+      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, 0);
+    }
+  /* SEND DATA*/
+
+   sprintf(buf,"%5d",count);
+  HAL_UART_Transmit(&huart3, buf, 5, 100);
+
+   sprintf(msg, "DIS: %d | TEM: %d | C: %d \n\r", Distance, Temperature, count);
+    HAL_UART_Transmit(&huart2, msg, strlen(msg), 100);
+
+
+
+    OSSemPost(
+        (OS_SEM *)&sem,
+        (OS_OPT)OS_OPT_POST_1,
+        (OS_ERR *)&os_err);
+    OSTimeDlyHMSM(0, 0, 1, 500, OS_OPT_TIME_HMSM_STRICT, &os_err);
+  }
+}
 /* USER CODE END 4 */
 
 /**
@@ -244,7 +373,7 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.
