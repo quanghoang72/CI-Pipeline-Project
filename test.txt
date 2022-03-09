@@ -1,0 +1,42 @@
+
+[ RUN      ] strLOWER.SpecialCharacters
+[       OK ] strLOWER.SpecialCharacters (0 ms)
+[----------] 3 tests from strLOWER (0 ms total)
+
+[----------] 2 tests from strNONUMBER
+[ RUN      ] strNONUMBER.Normalletter
+[       OK ] strNONUMBER.Normalletter (0 ms)
+[ RUN      ] strNONUMBER.SpeacialCharaters
+[       OK ] strNONUMBER.SpeacialCharaters (0 ms)
+[----------] 2 tests from strNONUMBER (0 ms total)
+
+[----------] 3 tests from strCPY
+[ RUN      ] strCPY.Normalletter
+[       OK ] strCPY.Normalletter (0 ms)
+[ RUN      ] strCPY.Empty
+[       OK ] strCPY.Empty (0 ms)
+[ RUN      ] strCPY.SpecialCharacters
+[       OK ] strCPY.SpecialCharacters (0 ms)
+[----------] 3 tests from strCPY (0 ms total)
+
+[----------] 3 tests from strCMP
+[ RUN      ] strCMP.Normalletter
+[       OK ] strCMP.Normalletter (0 ms)
+[ RUN      ] strCMP.SpecialCharacters
+[       OK ] strCMP.SpecialCharacters (0 ms)
+[ RUN      ] strCMP.Empty
+[       OK ] strCMP.Empty (0 ms)
+[----------] 3 tests from strCMP (0 ms total)
+
+[----------] 3 tests from strDUPL
+[ RUN      ] strDUPL.Normalletter
+[       OK ] strDUPL.Normalletter (0 ms)
+[ RUN      ] strDUPL.SpecialCharacters
+[       OK ] strDUPL.SpecialCharacters (0 ms)
+[ RUN      ] strDUPL.Empty
+[       OK ] strDUPL.Empty (0 ms)
+[----------] 3 tests from strDUPL (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 21 tests from 7 test suites ran. (0 ms total)
+[  PASSED  ] 21 tests.
