@@ -4,6 +4,7 @@ Purpose:
 - Build the code with Platformio
 - Static code analysis with cppcheck tool build-in platformio
 - Run workflow azure pipeline  
+
 Tool:
 - VsCode
 - Azure Devops
