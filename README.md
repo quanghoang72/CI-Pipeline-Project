@@ -1,5 +1,5 @@
 # Thesis - Create CI (Continuous Integration) environment for Embedded System
-
+[![Build Status](https://dev.azure.com/thesis16/First/_apis/build/status/quanghoang72.RTOS-pipeline?branchName=dite)](https://dev.azure.com/thesis16/First/_build/latest?definitionId=14&branchName=dite)  
 ## Table of Contents
 <!-- TOC -->
 - [Create a project in Azure DevOps](#create-a-project-in-azure-devops)  
