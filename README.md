@@ -1,12 +1,17 @@
-## README
-This project coded by C language and uC/OS-III (micrium OS)  
-Purpose:
-- Build the code with Platformio
-- Static code analysis with cppcheck tool build-in platformio
-- Run workflow azure pipeline  
+# Thesis - Create CI (Continuous Integration) environment for Embedded System
 
-Tool:
-- VsCode
-- Azure Devops
-- Git
-- Platformio IDE Extension & PlatformIO CLI
+## Table of Contents
+<!-- TOC -->
+-[Create a project in Azure DevOps](#create-a-project-in-azure-devops)
+-[Clone code into reposiotry](#)
+-[Integrate with AB](#)
+-[Generate and build Pipeline in Azure](#)
+-[Perform an automatic Pipeline](#)
+<!-- TOC -->
+
+## Create a project in Azure DevOps
+-To build this envrionment, first, you need to create and login into Azure Devops.
+![create new organization](attachments/new_organization.png)
+![Confirm information](confirm_information.png)
+-Pick and name and `+ Create project`
+![Create project](create_project.png)
