@@ -10,13 +10,16 @@
 <!-- TOC -->
 
 ## Create a project in Azure DevOps
-- To build this envrionment, first, you need to create and login into Azure Devops.  
+To build this envrionment, first, you need to create and login into Azure Devops.  
 ![create new organization](attachments/new_organization.png)
 ![Confirm information](attachments/confirm_information.png)  
-- Pick and name and `+ Create project`  
+Pick and name and `+ Create project`  
 ![Create project](attachments/create_project.png)  
 ## Clone code into repository
-- You can use either Azure Git repository or Github Repo 
+You can use either Azure Git repository or Github Repo
+- #### Azure Git Repository
+Import a repository by copy paste url  
+![Clone url](attachments/clone_url.png)
 ```bash
 $git clone https://github.com/quanghoang72/RTOS-pipeline.git
 ```
