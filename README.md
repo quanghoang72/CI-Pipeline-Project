@@ -2,8 +2,8 @@
 
 ## Table of Contents
 <!-- TOC -->
--[Create a project in Azure DevOps](#create-a-project-in-azure-devops)
--[Clone code into reposiotry](#)
+-[Create a project in Azure DevOps](#create-a-project-in-azure-devops)  
+-[Clone code into reposiotry](#clone-code-into-repository)  
 -[Integrate with AB](#)
 -[Generate and build Pipeline in Azure](#)
 -[Perform an automatic Pipeline](#)
@@ -12,6 +12,7 @@
 ## Create a project in Azure DevOps
 -To build this envrionment, first, you need to create and login into Azure Devops.
 ![create new organization](attachments/new_organization.png)
-![Confirm information](confirm_information.png)
+![Confirm information](attachments/confirm_information.png)
 -Pick and name and `+ Create project`
-![Create project](create_project.png)
+![Create project](attachments/create_project.png)
+## Clone code into repository
