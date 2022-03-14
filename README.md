@@ -58,7 +58,7 @@ Now you have exactly the same code into your own new repository on git
 The pipeline is instructed and run under YML file. The purpose of this pipeline:  
 - Build uC/OS-III code with platformIO CLI
 - Static code analysis cppcheck srouce code
-- Run unit googletest 
+- Run unit googletest  
 To build one, click `Pipeline` on the left bar of project UI > `Create Pipeline`
 - #### Azure Repos Git
 Chose your Project repository. It will detect the YML file in the current build directory of that repo code > `Run`
@@ -85,7 +85,7 @@ pr:
  #- release/*
 ```
 - trigger: cause a pipeline to run whenever you push an update to the specified branches or you push specified tags
-- Pull request (PR) triggers cause a pipeline to run whenever a pull request is opened with one of the specified target branches, or when updates are made to such a pull request.
+- Pull request (PR) triggers cause a pipeline to run whenever a pull request is opened with one of the specified target branches, or when updates are made to such a pull request.  
 For more information about trigger can be found at: [trigger pipeline](https://docs.microsoft.com/en-us/azure/devops/pipelines/repos/github?view=azure-devops&tabs=yaml)  
 If you want to not trigger the pipeline by push just a small change which **do not affect** the code (ie: readme, image...). Put `[skip ci]` in the commit to skip the build.  
 ![skip ci](attachments/skip_ci.png)
